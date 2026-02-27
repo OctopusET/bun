@@ -201,6 +201,8 @@ if(CMAKE_SYSTEM_PROCESSOR MATCHES "arm64|ARM64|aarch64|AARCH64")
   set(WEBKIT_ARCH "arm64")
 elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "amd64|x86_64|x64|AMD64")
   set(WEBKIT_ARCH "amd64")
+elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "riscv64|RISCV64")
+  set(WEBKIT_ARCH "riscv64")
 else()
   message(FATAL_ERROR "Unsupported architecture: ${CMAKE_SYSTEM_PROCESSOR}")
 endif()
@@ -248,7 +250,13 @@ file(
   STATUS WEBKIT_DOWNLOAD_STATUS
 )
 if(NOT "${WEBKIT_DOWNLOAD_STATUS}" MATCHES "^0;")
-  message(FATAL_ERROR "Failed to download WebKit: ${WEBKIT_DOWNLOAD_STATUS}")
+  if(WEBKIT_ARCH STREQUAL "riscv64")
+    message(FATAL_ERROR "No prebuilt WebKit available for riscv64. "
+      "Build WebKit from source with -DWEBKIT_LOCAL=ON (requires oven-sh/WebKit in vendor/WebKit), "
+      "or provide a pre-built WebKit with -DWEBKIT_PATH=/path/to/bun-webkit")
+  else()
+    message(FATAL_ERROR "Failed to download WebKit: ${WEBKIT_DOWNLOAD_STATUS}")
+  endif()
 endif()
 
 file(ARCHIVE_EXTRACT INPUT ${CACHE_PATH}/${WEBKIT_FILENAME} DESTINATION ${CACHE_PATH} TOUCH)
